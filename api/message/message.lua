@@ -1,30 +1,34 @@
 local moduleInfo = {
-	name 	= "message",
-	desc 	= "Message API extension for sending messages of various types",
-	author 	= "PepeAmpere",
-	date 	= "2015/05/12",
+	name = "message",
+	desc = "Message API extension for sending messages of various types",
+	author = "PepeAmpere",
+	date = "2015-05-12",
 	license = "notAlicense",
 }
 
-local VFSMODE = VFS.ZIP_ONLY
-if (constants == nil) then VFS.Include("LuaRules/Configs/constants.lua", nil, VFSMODE) end -- !! TBD => custom config
-if (stringExt == nil) then VFS.Include("LuaRules/modules/core/ext/stringExt/stringExt.lua", nil, VFSMODE) end
+-- load dependencies if necessary
+if (stringExt == nil) then attach.Module(modules, "stringExt") end -- attacher mandatory in such case
 
 -- LOCAL CONSTANTS
-local MESSAGE_TYPE_SEPARATOR 	= "#"
-local MESSAGE_ITEMS_SEPARATOR 	= "|"
-local MESSAGE_EQUATION 			= "="
-local MESSAGE_ELEMENT_OPENING 	= "{"
-local MESSAGE_ELEMENT_CLOSING 	= "}"
-local MESSAGE_ELEMENT_ENDING 	= "x"
+local MESSAGE_TYPE_SEPARATOR = "#"
+local MESSAGE_ITEMS_SEPARATOR = "|"
+local MESSAGE_EQUATION = "="
+local MESSAGE_ELEMENT_OPENING = "{"
+local MESSAGE_ELEMENT_CLOSING = "}"
+local MESSAGE_ELEMENT_ENDING = "x"
+
+local DEBUG_MESSAGE_LOG_ENCODED = false
+local DEBUG_MESSAGE_LOG_INGNORED_BY_RECEIVER = false
+-- global constants injection if needed
+if (constants) then -- if included before this module is loaded
+	DEBUG_MESSAGE_LOG_ENCODED = constants.DEBUG.MESSAGE.LOG_ENCODED
+	DEBUG_MESSAGE_LOG_INGNORED_BY_RECEIVER = constants.DEBUG.MESSAGE.LOG_INGNORED_BY_RECEIVER
+end
 
 -- SPEEDUP 
-local DEBUG_MESSAGE_LOG_ENCODED 				= constants.DEBUG.MESSAGE.LOG_ENCODED
-local DEBUG_MESSAGE_LOG_INGNORED_BY_RECEIVER 	= constants.DEBUG.MESSAGE.LOG_INGNORED_BY_RECEIVER
-
-local pairs 			= pairs
-local tostring 			= tostring
-local type 				= type
+local pairs = pairs
+local tostring = tostring
+local type = type
 
 local spEcho = Spring.Echo
 local spSendLuaUIMsg = Spring.SendLuaUIMsg
@@ -39,11 +43,10 @@ local spValidUnitID = Spring.ValidUnitID
 local spValidFeatureID = Spring.ValidFeatureID
 
 local newMessage = {
-	["Encode"] = function(messageToBeEncoded)
-		-- send messaged encoded into one string
-		-- also return given string 
-		-- messageToBeEncoded can be of any supported Lua types
-		
+	-- @description encode given message of whatever type and return encoded string
+	-- @argument messageToBeEncoded [anything] value of any type (see supported ones in encoders)
+	-- @return encodedString [string]
+	["Encode"] = function(messageToBeEncoded)		
 		local typeSeparator = MESSAGE_TYPE_SEPARATOR
 		local itemsSeparator = MESSAGE_ITEMS_SEPARATOR
 		local equation = MESSAGE_EQUATION
@@ -107,9 +110,11 @@ local newMessage = {
 		
 		return encodedString
 	end,
+	
+	-- @description return decoded message
+	-- @argument encodedMessage [string] value of any type (see supported ones in encoders)
+	-- @return decodedMessage [anything] same type, same message which was coded
 	["Decode"] = function(encodedMessage)
-		-- return message decoded from string
-		
 		local typeSeparator = MESSAGE_TYPE_SEPARATOR
 		local itemsSeparator = MESSAGE_ITEMS_SEPARATOR
 		local equation = MESSAGE_EQUATION
