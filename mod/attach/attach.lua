@@ -10,8 +10,7 @@ newAttach = {
 	["File"] = function(filePath, logRule, techName)
 		if (VFS.FileExists(filePath)) then
 			local VFSMODE = VFS.ZIP_ONLY
-			VFS.Include(filePath, nil, VFSMODE)
-			return true
+			return VFS.Include(filePath, nil, VFSMODE)
 		else
 			local prefix = ""
 			if (techName ~= nil) then prefix = "[" .. techName .. "] " end
