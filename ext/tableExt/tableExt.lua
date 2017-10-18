@@ -12,30 +12,31 @@ local moduleInfo = {
 
 -- @module tableExt
 local newTableExt = {
-	-- @description Returns shallow-copy of an inserted table
-	-- @argument object [anything] source object which should be copied
-	-- @return table
-	["ShallowCopy"] = function(object)
-		if type(object) ~= 'table' then return object end
-		local newTable = setmetatable({}, getmetatable(object))
-		for k, v in pairs(object) do
-			newTable[k] = v
+
+	-- @description Check if all entries satisfy a predicate
+	-- @argument inputTable [table]
+	-- @argument predicate [function(key, value)] predicate which has to be satisfied
+	-- @return result [boolean]
+	["All"] = function(inputTable, predicate)
+		for k, v in pairs(inputTable) do
+			if (not predicate(k, v)) then
+				return false
+			end
 		end
-		return newTable
+		return true
 	end,
 	
-	-- @description Returns deep-copy of an inserted table
-	-- @argument object [anything] source table which should be copied
-	-- @argument seen [boolean|optional] set of already seen objects in the tree - used for recursion
-	-- @return table
-	["DeepCopy"] = function(object, seen)
-		if type(object) ~= 'table' then return object end
-		if seen and seen[object] then return seen[object] end
-		local s = seen or {}
-		local newTable = setmetatable({}, getmetatable(object))
-		s[object] = newTable
-		for k, v in pairs(object) do newTable[tableExt.DeepCopy(k, s)] = tableExt.DeepCopy(v, s) end
-		return newTable
+	-- @description Check if at least one entry satisfies a predicate
+	-- @argument inputTable [table]
+	-- @argument predicate [function(key, value)] predicate which has to be satisfied
+	-- @return result [boolean]
+	["Any"] = function(inputTable, predicate)
+		for k, v in pairs(inputTable) do
+			if (predicate(k, v)) then
+				return true
+			end
+		end
+		return false
 	end,
 	
 	-- @description Returns deep-copy of an inserted table
@@ -61,6 +62,68 @@ local newTableExt = {
 		else
 			return tostring(object)
 		end
+	end,
+	
+	-- @description Return number of entries in a table
+	-- @argument inputTable [table]
+	-- @return count [number]
+	["Length"] = function(inputTable)
+		local count = 0
+		
+		for _,_ in pairs (inputTable) do
+			count = count + 1
+		end
+		
+		return count
+	end,
+	
+	-- @description Returns deep-copy of an inserted table
+	-- @argument object [anything] source table which should be copied
+	-- @argument seen [table] contains all previously seen tables to prevent never ending recursion
+	-- @return table
+	["DeepCopy"] = function(object, seen)
+		if (type(object) ~= "table") then return object end
+		if (seen and seen[object] then return seen[object]
+		
+		local newSeen = seen or {}
+		local newTable = setmetatable({}, getmetatable(object))
+		
+		newSeen[object] = newTable
+		for k, v in pairs(object) do 
+			newTable[tableExt.DeepCopy(k, newSeen)] = tableExt.DeepCopy(v, newSeen) 
+		end
+		return newTable
+	end,
+	
+
+	-- @description Return new table that contains same entries as originalTable
+	-- @argument object [anything] source object which should be copied
+	-- @return newTable [table]
+	["ShallowCopy"] = function(object)
+		if type(object) ~= 'table' then return object end
+		
+		local newTable = setmetatable({}, getmetatable(object))
+		
+		for k, v in pairs(object) do
+			newTable[k] = v
+		end
+		
+		return newTable
+	end,
+	
+	-- @description Return table of items which pass the filter
+	-- @argument originalTable [table]
+	-- @argument predicate [function(key,value)] predicate which has to be satisfied
+	["Filter"] = function(originalTable, predicate)
+		local newTable = {}
+		
+		for k,v in pairs (originalTable) do
+			if (predicate(k,v) == true) then
+				newTable[k] = v
+			end
+		end
+		
+		return newTable
 	end,
 	
 	-- @description Produces an alternate view of the given table that diregards `__index` metamethod.
