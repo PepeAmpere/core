@@ -83,7 +83,7 @@ local newTableExt = {
 	-- @return table
 	["DeepCopy"] = function(object, seen)
 		if (type(object) ~= "table") then return object end
-		if (seen and seen[object] then return seen[object]
+		if (seen and seen[object]) then return seen[object] end
 		
 		local newSeen = seen or {}
 		local newTable = setmetatable({}, getmetatable(object))
@@ -95,7 +95,6 @@ local newTableExt = {
 		return newTable
 	end,
 	
-
 	-- @description Return new table that contains same entries as originalTable
 	-- @argument object [anything] source object which should be copied
 	-- @return newTable [table]
@@ -105,6 +104,26 @@ local newTableExt = {
 		local newTable = setmetatable({}, getmetatable(object))
 		
 		for k, v in pairs(object) do
+			newTable[k] = v
+		end
+		
+		return newTable
+	end,
+	
+	-- @description Return new table that contains copies of elements of two tables
+	-- @argument objectOne [anything] source object which should be merge-copied
+	-- @argument objectTwo [anything] source object which should be merge-copied
+	-- @return newTable [table]
+	-- @comment on same key objectTwo values overwrite objectOne values, metatable is defined bz objectOne
+	["ShallowMergeCopy"] = function(objectOne, objectTwo)
+		if type(objectOne) ~= 'table' or type(objectTwo) ~= 'table' then return objectOne, objectTwo end
+		
+		local newTable = setmetatable({}, getmetatable(object))
+		
+		for k, v in pairs(objectOne) do
+			newTable[k] = v
+		end
+		for k, v in pairs(objectTwo) do
 			newTable[k] = v
 		end
 		
