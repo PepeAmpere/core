@@ -168,4 +168,33 @@ function timeObject:Normalize()
 	))
 end
 
+-- custom stuff
+
+function timeObject:HHMMSSFF(h, m, s, f)
+	local slots = {h = h, m = m, s = s, f = f}
+	local finalString
+	
+	for k,v in pairs(slots) do
+		if v then
+			local value = self[k]
+			
+			if (finalString ~= nil) then
+				finalString = finalString .. ":"
+			end
+			
+			if (value < 10) then
+				value = "0" .. value
+			end
+			
+			if (finalString == nil) then
+				finalString = tostring(value)
+			else
+				finalString = finalString .. tostring(value)
+			end
+		end
+	end
+	
+	return finalString
+end
+
 return HMSF
