@@ -79,7 +79,7 @@ newAttach = {
 -- update global tables 
 if (attach == nil) then attach = {} end
 for k,v in pairs(newAttach) do
-	if (attach[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (attach[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	attach[k] = v 
 end
 

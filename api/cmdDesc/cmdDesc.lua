@@ -54,6 +54,6 @@ newCmdDesc = {
 -- update global tables 
 if (cmdDesc == nil) then cmdDesc = {} end
 for k,v in pairs(newCmdDesc) do
-	if (cmdDesc[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (cmdDesc[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	cmdDesc[k] = v 
 end

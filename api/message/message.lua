@@ -490,7 +490,7 @@ local newMessage = {
 -- update global tables 
 if (message == nil) then message = {} end
 for k,v in pairs(newMessage) do
-	if (message[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (message[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	message[k] = v 
 end
 

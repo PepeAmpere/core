@@ -75,7 +75,7 @@ local newTimeExt = {
 -- update global tables 
 if (timeExt == nil) then timeExt = {} end
 for k,v in pairs(newTimeExt) do
-	if (timeExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (timeExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	timeExt[k] = v 
 end
 

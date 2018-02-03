@@ -115,7 +115,15 @@ function timeObjectMeta:__unm()
 		-self.s,
 		-self.f
 	)
-end    
+end
+
+function timeObjectMeta:__lt(hmsfObject)
+	return toFrames(self) < toFrames(hmsfObject)
+end
+
+function timeObjectMeta:__le(hmsfObject)
+	return toFrames(self) <= toFrames(hmsfObject)
+end
 
 function timeObject:Add(hmsfObject)
 	self = self + hmsfObject

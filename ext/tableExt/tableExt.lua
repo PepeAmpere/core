@@ -64,6 +64,19 @@ local newTableExt = {
 		end
 	end,
 	
+	-- @description Combine sequentially all values in table with initial value and return the result
+	-- @argument inputTable [table] source table which should be copied
+	-- @argument initValue [anything] source table which should be copied
+	-- @argument FoldFunction [function] fold function(previousValue, k, v)
+	-- @argument ... [anything] any other parameters
+	["Fold"] = function(inputTable, initValue, FoldFunction, ...)
+		for k,v in pairs(inputTable) do
+			initValue = FoldFunction(initValue, k, v, ...)
+		end
+		
+		return initValue
+	end,
+	
 	-- @description Return number of entries in a table
 	-- @argument inputTable [table]
 	-- @return count [number]
@@ -162,6 +175,6 @@ local newTableExt = {
 -- update global tables 
 if (tableExt == nil) then tableExt = {} end
 for k,v in pairs(newTableExt) do
-	if (tableExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (tableExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	tableExt[k] = v 
 end

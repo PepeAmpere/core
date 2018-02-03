@@ -93,6 +93,6 @@ local newStringExt = {
 -- update global tables 
 if (stringExt == nil) then stringExt = {} end
 for k,v in pairs(newStringExt) do
-	if (stringExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (stringExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	stringExt[k] = v 
 end

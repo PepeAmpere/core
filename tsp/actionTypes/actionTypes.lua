@@ -120,6 +120,6 @@ local newActionTypes = {
 -- update global tables 
 if (actionTypes == nil) then actionTypes = {} end
 for k,v in pairs(newActionTypes) do
-	if (actionTypes[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
+	-- if (actionTypes[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	actionTypes[k] = v 
 end
