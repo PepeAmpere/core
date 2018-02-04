@@ -58,7 +58,21 @@ newAttach = {
 				return false
 			end
 		end		
-	end,	
+	end,
+	["ModuleWithConfigs"] = function(modulesData, moduleName, configModuleName)
+		local result = attach.Module(modulesData, moduleName)
+		if (modules[moduleName] ~= nil) then
+			if (modules[moduleName].config ~= nil) then
+				if (modules[moduleName].config[configModuleName] ~= nil) then
+					local path = modules[moduleName].config[configModuleName].path
+					local files = modules[moduleName].config[configModuleName].files
+					if (path ~= nil and files ~= nil) then
+						attach.try.ModuleOptionalConfigs(path, files, configModuleName)
+					end
+				end
+			end
+		end		
+	end,
 	["try"] = {
 		["File"] = function(filePath, techName)
 			return attach.File(filePath, "NOTHING", techName)
