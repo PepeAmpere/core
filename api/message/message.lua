@@ -6,8 +6,11 @@ local moduleInfo = {
 	license = "notAlicense",
 }
 
--- load dependencies if necessary
-if (stringExt == nil) then attach.Module(modules, "stringExt") end -- attacher mandatory in such case
+-- load dependencies if necessary, attacher expected to be loaded
+if (stringExt == nil) then attach.Module(modules, "stringExt") end
+if (hmsf == nil) then hmsf = attach.Module(modules, "hmsf") end
+if (Vec3 == nil) then Vec3 = attach.Module(modules, "stringExt") end
+
 
 -- LOCAL CONSTANTS
 local MESSAGE_TYPE_SEPARATOR = "#"
@@ -71,7 +74,19 @@ local newMessage = {
 			end,
 			["table"] = function(messageChunk, typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level)
 				level = level or 0
-				local tableInString = "table" .. typeSeparator .. elementOpening .. level .. elementClosing
+				local typeMarker = "table"
+				
+				-- SPECIAL OBJECTS HANDLING
+				-- hmsf object handling
+				if (type(messageChunk.h) == "number" and type(messageChunk.m) == "number" and type(messageChunk.s) == "number" and type(messageChunk.f) == "number") then
+					typeMarker = "tableHMSF"
+				end
+				-- vec3 object handling
+				if (type(messageChunk.x) == "number" and type(messageChunk.y) == "number" and type(messageChunk.z) == "number") then
+					typeMarker = "tableVec3"
+				end
+				
+				local tableInString = typeMarker .. typeSeparator .. elementOpening .. level .. elementClosing
 				local itemsCounter = 0
 
 				for key, value in pairs(messageChunk) do
@@ -163,7 +178,7 @@ local newMessage = {
 					local newKey = newItem[1]
 					local newValueType = stringExt.SplitString(newItem[2], typeSeparator)
 					local newValue
-					if (newValueType[1] == "table") then
+					if (newValueType[1] == "table" or newValueType[1] == "tableHMSF" or newValueType[1] == "tableVec3") then
 						subTablesCounter = subTablesCounter + 1
 						newValue = decoders[newValueType[1]](subTables[subTablesCounter], typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level + 1)
 					else
@@ -178,6 +193,34 @@ local newMessage = {
 				end
 
 				return newTable
+			end,			
+			["tableHMSF"] = function(messageChunk, typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level)
+				local openSubElement = elementOpening .. (level + 1) .. elementClosing
+				local closingSubElement = elementOpening .. (level + 1) .. elementEnding .. elementClosing
+				local sequence = stringExt.SplitString(messageChunk, itemsSeparator)
+				local tablefied = {}
+				for i=1, #sequence do
+					local newItem = stringExt.SplitString(sequence[i], equation)
+					local newKey = newItem[1]
+					local newValueType = stringExt.SplitString(newItem[2], typeSeparator)
+					local newValue = decoders["number"](newValueType[2], typeSeparator)
+					tablefied[newKey] = newValue
+				end
+				return hmsf(tablefied.h, tablefied.m, tablefied.s, tablefied.f)
+			end,
+			["tableVec3"] = function(messageChunk, typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level)
+				local openSubElement = elementOpening .. (level + 1) .. elementClosing
+				local closingSubElement = elementOpening .. (level + 1) .. elementEnding .. elementClosing
+				local sequence = stringExt.SplitString(messageChunk, itemsSeparator)
+				local tablefied = {}
+				for i=1, #sequence do
+					local newItem = stringExt.SplitString(sequence[i], equation)
+					local newKey = newItem[1]
+					local newValueType = stringExt.SplitString(newItem[2], typeSeparator)
+					local newValue = decoders["number"](newValueType[2], typeSeparator)
+					tablefied[newKey] = newValue
+				end
+				return Vec3(tablefied.x, tablefied.y, tablefied.z)
 			end,
 
 			-- not supported data types
@@ -349,7 +392,8 @@ local newMessage = {
 	end,
 	
 	-- @description simulates propagation of the information by storing it in engine memory slot on a team level
-	-- @argument messageToBeSent [table] pairs of keys and values
+	-- @argument subject [string] key under which encoded table is saved
+	-- @argument encodedMessage [string] table encoded
 	-- @argument teamID [number] unique engine reference ID of a team
 	-- @argument accessPolicy [string] access rules to give information, possible values listed in comment, same policy for all items of given message
 	-- @comment possible access policies of the accessPolicy are same as for the Spring.SetTeamRulesParam
@@ -358,7 +402,7 @@ local newMessage = {
 	-- 'public'  : readable by all
 	-- @comment sent ONLY ONCE in whole simulation
 	-- @comment anyone insterested in message stored there have decode it first
-	["SendSyncedInfoTeamPacked"] = function(subject, messageToBeSent, teamID, accessPolicy)
+	["SendSyncedInfoTeamPacked"] = function(subject, encodedMessage, teamID, accessPolicy)
 		local newAccessPolicy = {}
 		if (accessPolicy == nil) then 
 			newAccessPolicy.private = true
@@ -367,7 +411,7 @@ local newMessage = {
 		end
 		
 		if (teamID ~= nil) then
-			spSetTeamRulesParam(teamID, subject, messageToBeSent, newAccessPolicy)
+			spSetTeamRulesParam(teamID, subject, encodedMessage, newAccessPolicy)
 		end
 	end,
 	
@@ -382,7 +426,7 @@ local newMessage = {
 	end,
 	
 	-- @description simulates propagation of the information by storing it in engine global memory slot
-	-- @argument subject [string] pairs of keys and values, stored in memory one by one
+	-- @argument subject [string] key under which encoded table is saved
 	-- @argument encodedMessage [string] table encoded
 	-- @comment anyone insterested in message stored there have decode it first
 	["SendSyncedInfoGamePacked"] = function(subject, encodedMessage)
