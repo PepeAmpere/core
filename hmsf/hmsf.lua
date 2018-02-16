@@ -44,13 +44,15 @@ end
 
 local function normalize(hmsfObject)
 	local frames = toFrames(hmsfObject)
-		
-	hmsfObject.h = math.floor(frames / FRAMES_IN_HOUR)
+	local RoundFunction = math.floor
+	if (frames < 0) then RoundFunction = math.ceil end
+	
+	hmsfObject.h = RoundFunction(frames / FRAMES_IN_HOUR)
 	frames = frames - hmsfObject.h * FRAMES_IN_HOUR
-	hmsfObject.m = math.floor(frames / FRAMES_IN_MINUTE)
+	hmsfObject.m = RoundFunction(frames / FRAMES_IN_MINUTE)
 	frames = frames - hmsfObject.m * FRAMES_IN_MINUTE
-	hmsfObject.s = math.floor(frames / FRAMES_IN_SECOND)
-	hmsfObject.f = math.floor(frames - hmsfObject.s * FRAMES_IN_SECOND) -- important for not rounded inputs
+	hmsfObject.s = RoundFunction(frames / FRAMES_IN_SECOND)
+	hmsfObject.f = RoundFunction(frames - hmsfObject.s * FRAMES_IN_SECOND) -- important for not rounded inputs
 	
 	return hmsfObject
 end
@@ -60,21 +62,11 @@ local HMSF = new
 -- OPERATORS AND BASIC METHODS --
 
 function timeObjectMeta:__add(hmsfObject)
-	return normalize(new( 
-		self.h + hmsfObject.h,
-		self.m + hmsfObject.m,
-		self.s + hmsfObject.s,
-		self.f + hmsfObject.f
-	))
+	return normalize(new(0, 0, 0, toFrames(self) + toFrames(hmsfObject)))
 end
 
 function timeObjectMeta:__sub(hmsfObject)
-	return normalize(new(
-		self.h - hmsfObject.h,
-		self.m - hmsfObject.m,
-		self.s - hmsfObject.s,
-		self.f - hmsfObject.f
-	))
+	return normalize(new(0, 0, 0, toFrames(self) - toFrames(hmsfObject)))
 end
 
 function timeObjectMeta:__mul(scalar)
@@ -185,6 +177,12 @@ function timeObject:HHMMSSFF(h, m, s, f)
 	for k,v in pairs(slots) do
 		if v then
 			local value = self[k]
+			local signPrefix = ""
+			
+			if (value < 0) then
+				value = math.abs(value)
+				signPrefix = "-"
+			end
 			
 			if (finalString ~= nil) then
 				finalString = finalString .. ":"
@@ -195,9 +193,9 @@ function timeObject:HHMMSSFF(h, m, s, f)
 			end
 			
 			if (finalString == nil) then
-				finalString = tostring(value)
+				finalString = signPrefix .. tostring(value)
 			else
-				finalString = finalString .. tostring(value)
+				finalString = finalString .. signPrefix .. tostring(value)
 			end
 		end
 	end
