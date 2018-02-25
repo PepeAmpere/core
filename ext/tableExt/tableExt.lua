@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc = "table functions extension",
 	author = "Michal Mojzik, PepeAmpere",
 	date = "2017-09-16",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 

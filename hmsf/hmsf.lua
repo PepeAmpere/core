@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc = "Time object and its methods.",
 	author = "PepeAmpere",
 	date = "2018-01-10",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 

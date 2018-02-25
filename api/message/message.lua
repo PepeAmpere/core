@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc = "Message API extension for sending messages of various types",
 	author = "PepeAmpere",
 	date = "2015-05-12",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 -- load dependencies if necessary, attacher expected to be loaded

@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc 	= "string functions extension",
 	author 	= "PepeAmpere",
 	date 	= "2015/12/29", -- re-founded library from 2013
-	license = "notAlicense",
+	license = "MIT",
 }
 
 -- in all functios the table call of core string functions is replaced by method-call to get maximum performance

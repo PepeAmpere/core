@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc	= "modules and files loader",
 	author 	= "PepeAmpere",
 	date 	= "2016/01/01",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 newAttach = {

@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc	= "Action types definition. Independent module.", 
 	author 	= "PepeAmpere", -- based on tsp_actions.lua from OTE
 	date 	= "2015/08/07",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 --[[ 

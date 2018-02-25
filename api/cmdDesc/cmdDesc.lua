@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc	= "Library for interaction with commands descriptions", 
 	author 	= "PepeAmpere",
 	date 	= "2015/08/12",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 local spFindUnitCmdDesc = Spring.FindUnitCmdDesc

@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc 	= "Library with time related functions",
 	author 	= "PepeAmpere",
 	date 	= "2015/08/18",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 -- HMSF time format

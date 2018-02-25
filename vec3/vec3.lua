@@ -3,7 +3,7 @@ local moduleInfo = {
 	desc = "Vector object and its methods.",
 	author = "PepeAmpere", -- inspired by work Gordon MacPherson and Michal Mojzik, wrote from scratch
 	date = "2017-09-08",
-	license = "notAlicense",
+	license = "MIT",
 }
 
 local sin = math.sin
