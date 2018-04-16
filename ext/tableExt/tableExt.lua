@@ -178,3 +178,5 @@ for k,v in pairs(newTableExt) do
 	-- if (tableExt[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	tableExt[k] = v 
 end
+
+return tableExt
