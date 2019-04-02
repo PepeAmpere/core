@@ -37,7 +37,7 @@ local newTableExt = {
 			end
 		end
 		return false
-	end
+	end,
 	
 	-- @description Check if any entry in a table is equal to a specific value
 	-- @argument someTable [table] table of entries
