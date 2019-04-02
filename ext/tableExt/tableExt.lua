@@ -37,6 +37,32 @@ local newTableExt = {
 			end
 		end
 		return false
+	end
+	
+	-- @description Check if any entry in a table is equal to a specific value
+	-- @argument someTable [table] table of entries
+	-- @argument searchedValue [anything] value to search for
+	-- @return result [boolean] true if any entry is equal to the value, false otherwise
+	["Contains"] = function(someTable, searchedValue)
+		return tableExt.Any(someTable, function(_, value) return value == searchedValue end)
+	end,
+	
+	-- @description Returns deep-copy of an inserted table
+	-- @argument object [anything] source table which should be copied
+	-- @argument seen [table] contains all previously seen tables to prevent never ending recursion
+	-- @return table
+	["DeepCopy"] = function(object, seen)
+		if (type(object) ~= "table") then return object end
+		if (seen and seen[object]) then return seen[object] end
+		
+		local newSeen = seen or {}
+		local newTable = setmetatable({}, getmetatable(object))
+		
+		newSeen[object] = newTable
+		for k, v in pairs(object) do 
+			newTable[tableExt.DeepCopy(k, newSeen)] = tableExt.DeepCopy(v, newSeen) 
+		end
+		return newTable
 	end,
 	
 	-- @description Returns deep-copy of an inserted table
@@ -64,83 +90,18 @@ local newTableExt = {
 		end
 	end,
 	
-	-- @description Combine sequentially all values in table with initial value and return the result
-	-- @argument inputTable [table] source table which should be copied
-	-- @argument initValue [anything] source table which should be copied
-	-- @argument FoldFunction [function] fold function(previousValue, k, v)
-	-- @argument ... [anything] any other parameters
-	["Fold"] = function(inputTable, initValue, FoldFunction, ...)
-		for k,v in pairs(inputTable) do
-			initValue = FoldFunction(initValue, k, v, ...)
+	-- @description Merge n tables
+	-- @argument target [table] source table which should be merged
+	-- @argument ... [tables] tables we want to merge together into target
+	-- @return target [table] does not make new table, returns first argument, unless first argument is nil
+	["Extend"] = function(target, ...)
+		if target == nil then target = {} end
+		for _, source in pairs({...}) do
+			for k, v in pairs(source) do
+				target[k] = v
+			end
 		end
-		
-		return initValue
-	end,
-	
-	-- @description Return number of entries in a table
-	-- @argument inputTable [table]
-	-- @return count [number]
-	["Length"] = function(inputTable)
-		local count = 0
-		
-		for _,_ in pairs (inputTable) do
-			count = count + 1
-		end
-		
-		return count
-	end,
-	
-	-- @description Returns deep-copy of an inserted table
-	-- @argument object [anything] source table which should be copied
-	-- @argument seen [table] contains all previously seen tables to prevent never ending recursion
-	-- @return table
-	["DeepCopy"] = function(object, seen)
-		if (type(object) ~= "table") then return object end
-		if (seen and seen[object]) then return seen[object] end
-		
-		local newSeen = seen or {}
-		local newTable = setmetatable({}, getmetatable(object))
-		
-		newSeen[object] = newTable
-		for k, v in pairs(object) do 
-			newTable[tableExt.DeepCopy(k, newSeen)] = tableExt.DeepCopy(v, newSeen) 
-		end
-		return newTable
-	end,
-	
-	-- @description Return new table that contains same entries as originalTable
-	-- @argument object [anything] source object which should be copied
-	-- @return newTable [table]
-	["ShallowCopy"] = function(object)
-		if type(object) ~= 'table' then return object end
-		
-		local newTable = setmetatable({}, getmetatable(object))
-		
-		for k, v in pairs(object) do
-			newTable[k] = v
-		end
-		
-		return newTable
-	end,
-	
-	-- @description Return new table that contains copies of elements of two tables
-	-- @argument objectOne [anything] source object which should be merge-copied
-	-- @argument objectTwo [anything] source object which should be merge-copied
-	-- @return newTable [table]
-	-- @comment on same key objectTwo values overwrite objectOne values, metatable is defined bz objectOne
-	["ShallowMergeCopy"] = function(objectOne, objectTwo)
-		if type(objectOne) ~= 'table' or type(objectTwo) ~= 'table' then return objectOne, objectTwo end
-		
-		local newTable = setmetatable({}, getmetatable(object))
-		
-		for k, v in pairs(objectOne) do
-			newTable[k] = v
-		end
-		for k, v in pairs(objectTwo) do
-			newTable[k] = v
-		end
-		
-		return newTable
+		return target
 	end,
 	
 	-- @description Return table of items which pass the filter
@@ -158,6 +119,57 @@ local newTableExt = {
 		return newTable
 	end,
 	
+	-- @description Combine sequentially all values in table with initial value and return the result
+	-- @argument inputTable [table] source table which should be copied
+	-- @argument initValue [anything] source table which should be copied
+	-- @argument FoldFunction [function] fold function(previousValue, k, v)
+	-- @argument result [anything] any other parameters
+	["Fold"] = function(inputTable, initValue, FoldFunction, ...)
+		for k,v in pairs(inputTable) do
+			initValue = FoldFunction(initValue, k, v, ...)
+		end
+		
+		return initValue
+	end,
+	
+	-- @description Check if given table is empty
+	-- @argument someTable [table] table we want to check
+	-- @return result [boolean] false if the table contains at least one entry, otherwise true
+	["IsEmpty"] = function(someTable)
+		if next(someTable) then
+			return false
+		end
+		return true
+	end,
+	
+	-- @description Return number of entries in a table
+	-- @argument inputTable [table]
+	-- @return count [number]
+	["Length"] = function(inputTable)
+		local count = 0
+		
+		for _,_ in pairs (inputTable) do
+			count = count + 1
+		end
+		
+		return count
+	end,
+	
+	-- @description Return new table that contains same entries as originalTable
+	-- @argument object [anything] source object which should be copied
+	-- @return newTable [table]
+	["ShallowCopy"] = function(object)
+		if type(object) ~= 'table' then return object end
+		
+		local newTable = setmetatable({}, getmetatable(object))
+		
+		for k, v in pairs(object) do
+			newTable[k] = v
+		end
+		
+		return newTable
+	end,
+	
 	-- @description Produces an alternate view of the given table that diregards `__index` metamethod.
 	-- @argument t [table] original table 
 	-- @comment This is equivalent to a situation where we would only use `rawget` on the original table. The original table is not modified in any way.
@@ -167,6 +179,19 @@ local newTableExt = {
 			__newindex = function() error("Attempt to write to a read-only rawTable.") end, -- disallow an writing to the resulting table
 			__pairs = function() return pairs(t) end, -- iterates only through the directly stored key-value pairs
 		})
+	end,
+	
+	-- @description elements of someTable transformed by function
+	-- @argument someTable [table] table of entries
+	-- @argument TransformationFunction [function(key, value)] function that transforms items
+	-- @return transformedTable [table] table of transformed elements
+	["Transform"] = function(someTable, TransformationFunction)
+		local transformedTable = {}
+		for key, value in pairs(someTable) do
+			transformedTable[key] = TransformationFunction(key, value)
+		end
+
+		return transformedTable
 	end,
 }
 
