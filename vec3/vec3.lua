@@ -119,8 +119,12 @@ function vectorMeta:__tostring()
 	return "Vec3(" .. self.x .. "," .. self.y .. "," .. self.z .. ")"
 end
 
+function vectorMeta:__concat()
+	return "Vec3(" .. self.x .. "," .. self.y .. "," .. self.z .. ")"
+end
+
 function vector:Length()
-	return self:LengthSqr()^0.5
+	return self:LengthSQ()^0.5
 end
 
 function vector:LengthSQ()
@@ -243,6 +247,12 @@ function vector:RotateByHeading(angleOne)
 	return self:Rotate2D(-angleOne) -- just rotation in opoosite direction than mathematic Rotate2D
 end
 
+function vector:ToMap()
+	self.x = math.max(math.min(Game.mapSizeX-1, self.x), 0)
+	self.z = math.max(math.min(Game.mapSizeZ-1, self.z), 0)
+	return self
+end
+
 -- Convert to array with three items, no string keys, as Spring API likes it
 function vector:AsSpringVector()
 	return {
@@ -250,6 +260,10 @@ function vector:AsSpringVector()
 		self.y, 
 		self.z
 	}
+end
+
+function vector:GetCoordinates()
+	return self.x, self.y, self.z
 end
 
 return Vec3

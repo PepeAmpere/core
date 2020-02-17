@@ -8,9 +8,10 @@ local moduleInfo = {
 
 -- load dependencies if necessary, attacher expected to be loaded
 if (stringExt == nil) then attach.Module(modules, "stringExt") end
+if (tableExt == nil) then attach.Module(modules, "tableExt") end
 if (hmsf == nil) then hmsf = attach.Module(modules, "hmsf") end
-if (Vec3 == nil) then Vec3 = attach.Module(modules, "stringExt") end
-
+if (Vec3 == nil) then Vec3 = attach.Module(modules, "vec3") end
+if (POI == nil) then POI = attach.Module(modules, "poi") end
 
 -- LOCAL CONSTANTS
 local MESSAGE_TYPE_SEPARATOR = "#"
@@ -85,6 +86,10 @@ local newMessage = {
 				if (type(messageChunk.x) == "number" and type(messageChunk.y) == "number" and type(messageChunk.z) == "number") then
 					typeMarker = "tableVec3"
 				end
+				-- POI object handling
+				if (type(messageChunk.dataType) == "string" and messageChunk.dataType == "POI") then
+					typeMarker = "tablePOI"
+				end
 				
 				local tableInString = typeMarker .. typeSeparator .. elementOpening .. level .. elementClosing
 				local itemsCounter = 0
@@ -97,7 +102,7 @@ local newMessage = {
 					tableInString = tableInString .. key .. equation .. valueInString
 					itemsCounter = itemsCounter + 1
 				end
-
+				
 				return tableInString .. elementOpening .. level .. elementEnding .. elementClosing
 			end,
 
@@ -178,7 +183,12 @@ local newMessage = {
 					local newKey = newItem[1]
 					local newValueType = stringExt.SplitString(newItem[2], typeSeparator)
 					local newValue
-					if (newValueType[1] == "table" or newValueType[1] == "tableHMSF" or newValueType[1] == "tableVec3") then
+					if (
+						newValueType[1] == "table" or 
+						newValueType[1] == "tableHMSF" or 
+						newValueType[1] == "tableVec3" or
+						newValueType[1] == "tablePOI"
+					) then
 						subTablesCounter = subTablesCounter + 1
 						newValue = decoders[newValueType[1]](subTables[subTablesCounter], typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level + 1)
 					else
@@ -222,6 +232,10 @@ local newMessage = {
 				end
 				return Vec3(tablefied.x, tablefied.y, tablefied.z)
 			end,
+			["tablePOI"] = function(messageChunk, typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level)
+				local tablefied = decoders.table(messageChunk, typeSeparator, itemsSeparator, equation, elementOpening, elementClosing, elementEnding, level)
+				return POI(tablefied)
+			end,
 
 			-- not supported data types
 			["function"] = function()
@@ -234,7 +248,7 @@ local newMessage = {
 				return nil
 			end,
 		}
-
+			
 		local sequence = stringExt.SplitString(encodedMessage, typeSeparator)
 		
 		if (sequence[1] ~= nil and decoders[sequence[1]] ~= nil) then -- check to avoid decoding not coded messages
@@ -290,10 +304,10 @@ local newMessage = {
 		local subject = messageToBeSent.subject
 		
 		-- call all event handler functions registered... what a HACK!
-		local exist, listOfHandlers = message.handler.IsRegistered(subject, i)
+		local exist, listOfHandlers = message.handler.IsRegistered(subject)
 		if (exist) then
 			for i=1, #listOfHandlers do
-				Script.LuaRules[listOfHandlers[i]](messageToBeSent, 0)
+				Script.LuaRules[listOfHandlers[i]](messageToBeSent)
 			end
 		end
 	end,
@@ -464,11 +478,12 @@ local newMessage = {
 		-- ? i was also thinking about having sub-modules of recievers covering given context but for simple cases it would make situation more complicated
 		-- usually let empty or use name of file calling message.Receive
 		
+		-- PERF. RISK - called from every gadget using Receive, may want use message.DecodeSubject(...)
 		local decodedMsg = message.Decode(encodedMessage) -- I decode the message
 		
 		if (decodedMsg == nil) then return end -- ingnore not-coded messages
 		local msgSubject = decodedMsg.subject -- I save message subject to variable which selects function handling given message
-		
+				
 		-- if list of handlers doesn't exist, user possible use want to use message.Decode only or load proper file
 		if (receiveCustomMessage == nil) then spEcho("[" .. moduleInfo.name .. "][ERROR] tried to call non-existing table of receivers [" .. msgSubject .. "]. Maybe you want just message.Decode() function instead.") end
 		
@@ -537,4 +552,6 @@ for k,v in pairs(newMessage) do
 	-- if (message[k] ~= nil) then Spring.Echo("NOTIFICATION: Attempt to rewrite global table in module [" .. moduleInfo.name ..  "] - key: " .. k) end
 	message[k] = v 
 end
+
+return message
 

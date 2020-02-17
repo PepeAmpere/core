@@ -22,14 +22,15 @@ local newStringExt = {
 	-- @param #string separatorPattern Pattern string which is separation marker
 	-- @return #table Array of separated pieces	
 	["SplitString"] = function(source, separatorPattern)
-		local tableOfResults = {}
+		if source == nil then return {""} end
+		local arrayOfResults = {}
 		local resultsCount = 1
 		local fPattern = "(.-)" .. separatorPattern
 		local currentEndPos = 1
 		local start, ending, captured = source:find(fPattern, 1)
 		while start do
 			if start ~= 1 or captured ~= "" then
-				tableOfResults[resultsCount] = captured
+				arrayOfResults[resultsCount] = captured
 				resultsCount = resultsCount + 1
 			end
 			currentEndPos = ending + 1
@@ -37,10 +38,10 @@ local newStringExt = {
 		end
 		if currentEndPos <= #source then
 			captured = source:sub(currentEndPos)
-			tableOfResults[resultsCount] = captured
+			arrayOfResults[resultsCount] = captured
 			resultsCount = resultsCount + 1
 		end
-		return tableOfResults		
+		return arrayOfResults		
 	end,
 
 	---

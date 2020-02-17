@@ -80,7 +80,7 @@ local newTableExt = {
 			--end
 			local s = '{ '
 			for k,v in (object.pairs or pairs)(object) do
-				 s = s .. '[' .. tableExt.Dump(k, 0) .. '] = ' .. tableExt.Dump(v, maxDepth-1) .. ','
+				s = s .. '[' .. tableExt.Dump(k, 0) .. '] = ' .. tableExt.Dump(v, maxDepth-1) .. ','
 			end
 			return s .. '} '
 		elseif type(object) == 'string' then
