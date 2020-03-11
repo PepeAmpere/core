@@ -31,12 +31,15 @@ local function new(x, y, z)
 end
 
 local function is3DVector(vectorOne)
-	return type(vectorOne) == "table" and type(vectorOne.x) == "number" and type(vectorOne.y) == "number" and type(vectorOne.z) == "number"
+	return 	type(vectorOne) == "table" and 
+			type(vectorOne.x) == "number" and 
+			type(vectorOne.y) == "number" and 
+			type(vectorOne.z) == "number"
 end
 
 local Vec3 = new
 
--- OPERATORS AND BASIC METHODS --
+-- operators
 
 function vectorMeta:__add(vectorOne)
 	return new( 
@@ -127,6 +130,10 @@ function vector:Length()
 	return self:LengthSQ()^0.5
 end
 
+function vector:Length2D()
+	return ((self.x * self.x) + (self.z * self.z))^0.5
+end
+
 function vector:LengthSQ()
 	return ((self.x * self.x) + (self.y * self.y) + (self.z * self.z))
 end
@@ -135,8 +142,29 @@ function vector:Distance(vectorOne)
 	return (self - vectorOne):Length()
 end
 
+function vector:Distance2D(vectorOne)
+	return (self - vectorOne):Length2D()
+end
+
 function vector:DistanceSQ(vectorOne)
 	return (self - vectorOne):LengthSQ()
+end
+
+function vector:DistanceToLine(lineVectorOne, lineVectorTwo)
+	local lineVector = (lineVectorTwo - lineVectorOne)
+	local pointVector = (self - lineVectorOne)
+	local rotAlpha = atan2(-lineVector.z, lineVector.y)
+	local rotBeta = atan2(
+		- (cos(rotAlpha) * lineVector.y - sin(rotAlpha) * lineVector.z),
+		lineVector.x
+	)	
+	local matrix = {
+		cos(rotBeta), -sin(rotBeta) * cos(rotAlpha), sin(rotBeta) * sin(rotAlpha),
+		sin(rotBeta), cos(rotBeta) * cos(rotAlpha), -cos(rotBeta) * sin(rotAlpha),
+		0, sin(rotAlpha), cos(rotAlpha)
+	}
+	local rotatedPoint = pointVector:Transform(matrix)
+	return Vec3(0, rotatedPoint.y, rotatedPoint.z):Length()
 end
 
 function vector:Zero()
@@ -172,7 +200,7 @@ function vector:DotProduct(angleOne)
 	return (self.x * vectorOne.x) + (self.y * vectorOne.y) + (self.z * vectorOne.z)
 end
 
-function vector:Cross(vectorOne)
+function vector:CrossProduct(vectorOne)
 	return new(
 		(self.y * vectorOne.z) - (vectorOne.y * self.z),
 		(self.z * vectorOne.x) - (vectorOne.z * self.x),
@@ -184,24 +212,7 @@ function vector:Lerp(vectorOne, alpha)
 	return self + ((vectorOne - self) * alpha)
 end
 
--- MATRIXES
-
-function vector:CreateEmitMatrix()
-	local x = self.x
-	local y = self.y
-	local z = self.z
-	local xz = x*z
-	local xy = x*y
-	local yz = y*z
-
-	return {
-		x*x, xy-z, xz+y,
-		xy+z, y*y, yz-x,
-		xz-y, yz+x, z*z
-	}
-end
-
-function vector:MultMatrix(matrix)
+function vector:Transform(matrix)
 	local x = self.x
 	local y = self.y
 	local z = self.z
