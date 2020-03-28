@@ -459,9 +459,11 @@ local newMessage = {
 	-- WIDGET => WIDGETS communication
 	
 	-- @comment	Sends real message for each client running this code
-	["SendUI"] = function(messageToBeSent)
+	-- @argument messageToBeSent [anything] table message
+	-- @argument mode [string|optional]  possible modes are: "s"/"specs" & "a"/"allies"
+	["SendUI"] = function(messageToBeSent, mode)
 		local encodedMessage = message.Encode(messageToBeSent)
-		spSendLuaUIMsg(encodedMessage)
+		spSendLuaUIMsg(encodedMessage, mode)
 		return encodedMessage
 	end,
 	["SendGaia"] = function(messageToBeSent)
