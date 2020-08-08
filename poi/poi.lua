@@ -199,6 +199,15 @@ function poi:SetID(ID)
 	return self
 end
 
+function poi:GetDefID()
+	return self.defID
+end
+
+function poi:SetDefID(defID)
+	self.defID = defID
+	return self
+end
+
 function poi:GetLayerID()
 	return self.layerID
 end
